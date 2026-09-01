@@ -11,7 +11,8 @@
     "verify": "npm run typecheck && npm run check",
     "experiment": "tsx scripts/runExperiment.ts",
     "seed": "tsx scripts/seed.ts",
-    "proof": "tsx scripts/checkProof.ts"
+    "proof": "tsx scripts/checkProof.ts",
+    "safety:proof": "tsx scripts/checkSafetyProof.ts"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
