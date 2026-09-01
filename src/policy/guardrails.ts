@@ -1,11 +1,13 @@
 import type {
-  DeclineCode,
   FailedPayment,
   Intervention,
   Decision,
   GuardrailVerdict,
 } from "../domain/types";
-import { getDeclineProfile } from "../domain/declineCodes";
+
+import {
+  getDeclineProfile,
+} from "../domain/declineCodes";
 
 /**
  * RECLAIM Guardrail Layer
@@ -21,7 +23,8 @@ import { getDeclineProfile } from "../domain/declineCodes";
  * The guardrail layer is deterministic and must never depend on an LLM.
  */
 
-const CHARGE_ATTEMPT_INTERVENTIONS: ReadonlySet<Intervention> =
+const CHARGE_ATTEMPT_INTERVENTIONS:
+  ReadonlySet<Intervention> =
   new Set<Intervention>([
     "RETRY_NOW",
     "RETRY_SCHEDULED",
@@ -30,14 +33,16 @@ const CHARGE_ATTEMPT_INTERVENTIONS: ReadonlySet<Intervention> =
     "NUDGE_THEN_RETRY",
   ]);
 
-const CUSTOMER_CONTACT_INTERVENTIONS: ReadonlySet<Intervention> =
+const CUSTOMER_CONTACT_INTERVENTIONS:
+  ReadonlySet<Intervention> =
   new Set<Intervention>([
     "REQUEST_INSTRUMENT_UPDATE",
     "REQUEST_REAUTHORIZATION",
     "NUDGE_THEN_RETRY",
   ]);
 
-const MONEY_MOVING_INTERVENTIONS: ReadonlySet<Intervention> =
+const MONEY_MOVING_INTERVENTIONS:
+  ReadonlySet<Intervention> =
   new Set<Intervention>([
     "RETRY_NOW",
     "RETRY_SCHEDULED",
@@ -48,18 +53,13 @@ const MONEY_MOVING_INTERVENTIONS: ReadonlySet<Intervention> =
 
 /**
  * Returns true when the intervention consumes a charge attempt.
- *
- * This distinction is important:
- *
- * - requesting a card update does not charge
- * - escalating to a human does not charge
- * - reconciling a timeout does not charge
- * - actually attempting payment does charge
  */
 export function consumesChargeAttempt(
   intervention: Intervention,
 ): boolean {
-  return CHARGE_ATTEMPT_INTERVENTIONS.has(intervention);
+  return CHARGE_ATTEMPT_INTERVENTIONS.has(
+    intervention,
+  );
 }
 
 /**
@@ -68,33 +68,36 @@ export function consumesChargeAttempt(
 export function contactsCustomer(
   intervention: Intervention,
 ): boolean {
-  return CUSTOMER_CONTACT_INTERVENTIONS.has(intervention);
-}
-
-/**
- * Returns true when the action can actually move money.
- */
-export function movesMoney(
-  intervention: Intervention,
-): boolean {
-  return MONEY_MOVING_INTERVENTIONS.has(intervention);
-}
-
-/**
- * A small helper used by several guardrails.
- */
-function hasAlternateRail(
-  payment: FailedPayment,
-): boolean {
-  return payment.customer.availableMethods.some(
-    (method) => method !== payment.method,
+  return CUSTOMER_CONTACT_INTERVENTIONS.has(
+    intervention,
   );
 }
 
 /**
- * Validate the basic structural consistency of a decision.
+ * Returns true when the intervention directly represents a
+ * money-moving recovery transition.
+ */
+export function movesMoney(
+  intervention: Intervention,
+): boolean {
+  return MONEY_MOVING_INTERVENTIONS.has(
+    intervention,
+  );
+}
+
+function hasAlternateRail(
+  payment: FailedPayment,
+): boolean {
+  return payment.customer.availableMethods.some(
+    (method) =>
+      method !== payment.method,
+  );
+}
+
+/**
+ * Validate the structural consistency of a decision.
  *
- * These checks are deliberately independent of the decline code.
+ * These checks are independent of the decline code.
  */
 function checkDecisionShape(
   payment: FailedPayment,
@@ -102,8 +105,14 @@ function checkDecisionShape(
   blockedBy: string[],
   notes: string[],
 ): void {
-  if (decision.paymentId !== payment.id) {
-    blockedBy.push("PAYMENT_ID_MISMATCH");
+  if (
+    decision.paymentId !==
+    payment.id
+  ) {
+    blockedBy.push(
+      "PAYMENT_ID_MISMATCH",
+    );
+
     notes.push(
       "The decision refers to a different payment.",
     );
@@ -114,7 +123,10 @@ function checkDecisionShape(
       "RETRY_ALTERNATE_RAIL" &&
     decision.switchToMethod === null
   ) {
-    blockedBy.push("ALTERNATE_RAIL_NOT_SPECIFIED");
+    blockedBy.push(
+      "ALTERNATE_RAIL_NOT_SPECIFIED",
+    );
+
     notes.push(
       "An alternate-rail retry must specify the rail to use.",
     );
@@ -123,10 +135,15 @@ function checkDecisionShape(
   if (
     decision.intervention ===
       "RETRY_ALTERNATE_RAIL" &&
-    decision.switchToMethod !== null &&
-    decision.switchToMethod === payment.method
+    decision.switchToMethod !==
+      null &&
+    decision.switchToMethod ===
+      payment.method
   ) {
-    blockedBy.push("ALTERNATE_RAIL_EQUALS_PRIMARY");
+    blockedBy.push(
+      "ALTERNATE_RAIL_EQUALS_PRIMARY",
+    );
+
     notes.push(
       "The alternate rail must differ from the failed payment method.",
     );
@@ -135,9 +152,13 @@ function checkDecisionShape(
   if (
     decision.intervention ===
       "RETRY_SPLIT_AMOUNT" &&
-    decision.splitAmountPaise === null
+    decision.splitAmountPaise ===
+      null
   ) {
-    blockedBy.push("SPLIT_AMOUNT_NOT_SPECIFIED");
+    blockedBy.push(
+      "SPLIT_AMOUNT_NOT_SPECIFIED",
+    );
+
     notes.push(
       "A split-payment retry must specify the amount to charge.",
     );
@@ -146,10 +167,14 @@ function checkDecisionShape(
   if (
     decision.intervention ===
       "RETRY_SPLIT_AMOUNT" &&
-    decision.splitAmountPaise !== null &&
+    decision.splitAmountPaise !==
+      null &&
     decision.splitAmountPaise <= 0
   ) {
-    blockedBy.push("INVALID_SPLIT_AMOUNT");
+    blockedBy.push(
+      "INVALID_SPLIT_AMOUNT",
+    );
+
     notes.push(
       "A split amount must be greater than zero.",
     );
@@ -158,10 +183,15 @@ function checkDecisionShape(
   if (
     decision.intervention ===
       "RETRY_SPLIT_AMOUNT" &&
-    decision.splitAmountPaise !== null &&
-    decision.splitAmountPaise >= payment.amountPaise
+    decision.splitAmountPaise !==
+      null &&
+    decision.splitAmountPaise >=
+      payment.amountPaise
   ) {
-    blockedBy.push("SPLIT_AMOUNT_NOT_A_SPLIT");
+    blockedBy.push(
+      "SPLIT_AMOUNT_NOT_A_SPLIT",
+    );
+
     notes.push(
       "A split retry must charge less than the original amount.",
     );
@@ -172,7 +202,10 @@ function checkDecisionShape(
       "RETRY_SCHEDULED" &&
     decision.scheduledFor === null
   ) {
-    blockedBy.push("SCHEDULE_REQUIRED");
+    blockedBy.push(
+      "SCHEDULE_REQUIRED",
+    );
+
     notes.push(
       "A scheduled retry must specify when it should run.",
     );
@@ -200,18 +233,36 @@ function checkUniversalStops(
   blockedBy: string[],
   notes: string[],
 ): void {
-  if (payment.customer.hasOpenDispute) {
-    blockedBy.push("OPEN_DISPUTE");
+  /**
+   * An open dispute freezes AUTOMATED MONEY MOVEMENT.
+   *
+   * Human escalation and terminal handling remain possible because
+   * refusing those actions would prevent the system from safely
+   * handing the case to a human.
+   */
+  if (
+    payment.customer.hasOpenDispute &&
+    movesMoney(decision.intervention)
+  ) {
+    blockedBy.push(
+      "OPEN_DISPUTE",
+    );
+
     notes.push(
-      "Recovery is frozen while an open dispute exists.",
+      "Money-moving recovery is frozen while an open dispute exists.",
     );
   }
 
   if (
     payment.customer.contactOptOut &&
-    contactsCustomer(decision.intervention)
+    contactsCustomer(
+      decision.intervention,
+    )
   ) {
-    blockedBy.push("CUSTOMER_CONTACT_OPT_OUT");
+    blockedBy.push(
+      "CUSTOMER_CONTACT_OPT_OUT",
+    );
+
     notes.push(
       "The customer has opted out of contact.",
     );
@@ -223,18 +274,23 @@ function checkUniversalStops(
    * It must never directly authorize another charge.
    */
   if (
-    payment.declineCode === "GATEWAY_TIMEOUT" &&
+    payment.declineCode ===
+      "GATEWAY_TIMEOUT" &&
     decision.intervention !==
       "RECONCILE_THEN_DECIDE"
   ) {
-    blockedBy.push("UNRECONCILED_GATEWAY_TIMEOUT");
+    blockedBy.push(
+      "UNRECONCILED_GATEWAY_TIMEOUT",
+    );
+
     notes.push(
       "An indeterminate gateway result must be reconciled before another charge attempt.",
     );
   }
 
   /**
-   * Reconciliation itself is not a payment attempt.
+   * Reconciliation itself is not a payment attempt and should only
+   * occur when the current state is actually ambiguous.
    */
   if (
     decision.intervention ===
@@ -242,7 +298,10 @@ function checkUniversalStops(
     payment.declineCode !==
       "GATEWAY_TIMEOUT"
   ) {
-    blockedBy.push("UNNECESSARY_RECONCILIATION");
+    blockedBy.push(
+      "UNNECESSARY_RECONCILIATION",
+    );
+
     notes.push(
       "Reconciliation is only required for an indeterminate gateway result.",
     );
@@ -258,19 +317,27 @@ function checkAttemptBudget(
   blockedBy: string[],
   notes: string[],
 ): void {
-  if (!consumesChargeAttempt(decision.intervention)) {
+  if (
+    !consumesChargeAttempt(
+      decision.intervention,
+    )
+  ) {
     return;
   }
 
-  const profile = getDeclineProfile(
-    payment.declineCode,
-  );
+  const profile =
+    getDeclineProfile(
+      payment.declineCode,
+    );
 
   if (
     payment.attemptsSoFar >=
     profile.maxChargeAttempts
   ) {
-    blockedBy.push("ATTEMPT_CEILING");
+    blockedBy.push(
+      "ATTEMPT_CEILING",
+    );
+
     notes.push(
       `The payment has already used ${payment.attemptsSoFar} charge attempts; the policy ceiling is ${profile.maxChargeAttempts}.`,
     );
@@ -286,13 +353,11 @@ function checkDeclinePolicy(
   blockedBy: string[],
   notes: string[],
 ): void {
-  const profile = getDeclineProfile(
-    payment.declineCode,
-  );
+  const profile =
+    getDeclineProfile(
+      payment.declineCode,
+    );
 
-  /**
-   * The taxonomy owns the hard action whitelist.
-   */
   if (
     !profile.allowedInterventions.includes(
       decision.intervention,
@@ -324,11 +389,17 @@ function checkAlternateRail(
     return;
   }
 
-  if (!hasAlternateRail(payment)) {
-    blockedBy.push("NO_ALTERNATE_RAIL");
+  if (
+    !hasAlternateRail(payment)
+  ) {
+    blockedBy.push(
+      "NO_ALTERNATE_RAIL",
+    );
+
     notes.push(
       "No alternative payment method is available.",
     );
+
     return;
   }
 
@@ -373,9 +444,12 @@ function checkMandateCeiling(
   }
 
   if (
-    payment.mandateCeilingPaise === null
+    payment.mandateCeilingPaise ===
+    null
   ) {
-    blockedBy.push("MANDATE_INFORMATION_MISSING");
+    blockedBy.push(
+      "MANDATE_INFORMATION_MISSING",
+    );
 
     notes.push(
       "A subscription renewal cannot proceed without mandate information.",
@@ -393,7 +467,8 @@ function checkMandateCeiling(
 
     if (
       split !== null &&
-      split > payment.mandateCeilingPaise
+      split >
+        payment.mandateCeilingPaise
     ) {
       blockedBy.push(
         "MANDATE_CEILING_EXCEEDED",
@@ -448,7 +523,8 @@ function checkSplitAmount(
   }
 
   if (
-    split >= payment.amountPaise
+    split >=
+    payment.amountPaise
   ) {
     blockedBy.push(
       "INVALID_SPLIT_AMOUNT",
@@ -477,9 +553,9 @@ function checkSplitAmount(
  *
  * This is the single entry point used by the orchestrator.
  *
- * It deliberately returns a complete explanation instead of throwing,
- * because a blocked AI decision is an expected business outcome and must
- * appear in the audit trail.
+ * A blocked decision is returned as data rather than thrown as an
+ * exception because it is an expected business outcome and must be
+ * preserved in the audit trail.
  */
 export function evaluateGuardrails(
   payment: FailedPayment,
@@ -538,16 +614,13 @@ export function evaluateGuardrails(
   );
 
   return {
-    allowed: blockedBy.length === 0,
+    allowed:
+      blockedBy.length === 0,
     blockedBy,
     notes,
   };
 }
 
-/**
- * Convenience helper for the common case where the caller only needs
- * to know whether an action can proceed.
- */
 export function isDecisionAllowed(
   payment: FailedPayment,
   decision: Decision,
@@ -558,9 +631,6 @@ export function isDecisionAllowed(
   ).allowed;
 }
 
-/**
- * Return a stable human-readable summary for the audit trail.
- */
 export function explainGuardrailVerdict(
   verdict: GuardrailVerdict,
 ): string {

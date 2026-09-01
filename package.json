@@ -10,7 +10,8 @@
     "check": "tsx scripts/checkInvariants.ts && tsx scripts/checkGateway.ts && tsx scripts/checkSeed.ts && tsx scripts/checkGuardrails.ts && tsx scripts/checkRecoveryRunner.ts",
     "verify": "npm run typecheck && npm run check",
     "experiment": "tsx scripts/runExperiment.ts",
-"seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "proof": "tsx scripts/checkProof.ts"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
