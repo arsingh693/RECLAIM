@@ -1,18 +1,26 @@
+<div align="center">
+
+<img src="./public/reclaim-logo.png" alt="RECLAIM Logo" width="180"/>
+
 # RECLAIM
 
 ### Autonomous Payment Recovery Control Plane
 
-**Razorpay Buildathon · Track 03 — AI Revenue Recovery**
+**Recover revenue. Respect policy. Keep humans in control.**
 
-> **AI recommends. Policy constrains. Guardrails authorize. Every decision is auditable.**
+<br/>
 
-RECLAIM is an event-driven payment recovery control plane built around a simple idea:
+[![Next.js](https://img.shields.io/badge/Next.js-Next.js-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-TypeScript-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Razorpay](https://img.shields.io/badge/Razorpay-Payments-3395FF)](https://razorpay.com/)
+[![AI](https://img.shields.io/badge/AI-Policy--Bounded-purple)](#2-the-core-idea)
+[![Buildathon](https://img.shields.io/badge/Razorpay%20Buildathon-Track%2003-success)](#3-how-this-maps-to-the-buildathon-track)
 
-**a failed payment should become a controlled recovery decision, not an automatic blind retry.**
+</div>
 
-The system takes a failed payment, determines why it failed, builds a **closed set of policy-approved recovery actions**, uses bounded AI to select the most appropriate action from that set, validates the recommendation through deterministic guardrails, and records the decision in an inspectable audit ledger.
+---
 
-When the authorized action is customer-facing recovery, RECLAIM can create a **real Razorpay Payment Link in Test Mode** rather than performing an uncontrolled server-side re-charge.
+> **RECLAIM turns failed payments into controlled recovery decisions — combining Razorpay gateway state, deterministic policy, bounded AI, safety guardrails, and an auditable execution layer.**
 
 ---
 
@@ -59,7 +67,7 @@ RECLAIM is designed around that boundary.
 
 RECLAIM deliberately splits authority.
 
-### Deterministic code decides what is permitted
+## Deterministic code decides what is permitted
 
 The policy layer owns:
 
@@ -76,7 +84,7 @@ These are business and safety constraints.
 
 They are not delegated to a language model.
 
-### AI decides what is best among permitted options
+## AI decides what is best among permitted options
 
 The AI receives:
 
@@ -97,7 +105,7 @@ It cannot:
 - bypass reconciliation
 - directly become the payment executor
 
-### Guardrails decide whether the recommendation is executable
+## Guardrails decide whether the recommendation is executable
 
 The selected intervention is evaluated again.
 
@@ -149,9 +157,17 @@ It is a **bounded decision system around money-moving operations**.
 
 # 4. Architecture
 
-The high-level architecture is included as a visual artifact in the repository:
+The high-level architecture is included as a visual artifact in the repository.
 
-![RECLAIM Architecture](docs/reclaim-architecture.png)
+<div align="center">
+
+<img src="./docs/reclaim-architecture.png" alt="RECLAIM Architecture" width="900"/>
+
+</div>
+
+For the detailed architecture explanation:
+
+**[Read the full Architecture document](docs/ARCHITECTURE.md)**
 
 ### Architecture at a glance
 
@@ -251,21 +267,17 @@ The interface contract was not aligned.
 
 **Fix:** make the API/UI response contract explicit and update the recovery console to consume the authoritative `result` payload.
 
----
-
 ### 02 — The verification script was reading an old response shape
 
 The recovery implementation had evolved, but the proof script was still expecting an older nested payload.
 
 That meant the system could be correct while the verification tooling was wrong.
 
-**Fix:** update the proof harness to validate the current flat recovery result and its actual audit artifacts.
+**Fix:** update the proof harness to validate the current recovery result and its actual audit artifacts.
 
 This reinforced an important principle:
 
 > **Verification code is part of the system, not an afterthought.**
-
----
 
 ### 03 — AI provenance and authority boundaries became stricter
 
@@ -291,8 +303,6 @@ The model can recommend.
 
 It cannot authorize.
 
----
-
 ### 04 — Deterministic proof was re-run after the lifecycle fix
 
 The final deterministic proof run covered:
@@ -316,8 +326,6 @@ with:
 ```
 
 The adversarial safety assertions also passed.
-
----
 
 ### 05 — The real gateway path was then proved
 
@@ -345,17 +353,21 @@ This is the final outcome of the engineering loop:
 
 > **The system did not just recover in simulation. The real gateway integration reached the recovery boundary safely.**
 
+### Full engineering postmortem
+
+**[Read: What Broke at 2 AM](docs/WHAT-BROKE-AT-2AM.md)**
+
 ---
 
 # 6. End-to-end recovery flow
 
 A typical RECLAIM evaluation looks like this.
 
-### 01 — Gateway state
+## 01 — Gateway state
 
 RECLAIM receives or fetches the authoritative Razorpay payment state.
 
-### 02 — Failure taxonomy
+## 02 — Failure taxonomy
 
 The gateway failure is mapped into the RECLAIM decline taxonomy.
 
@@ -378,7 +390,7 @@ The taxonomy is not merely descriptive.
 
 It determines the safety boundary.
 
-### 03 — Candidate generation
+## 03 — Candidate generation
 
 The policy engine generates a **closed candidate set**.
 
@@ -395,13 +407,13 @@ The important property is:
 
 > **The AI never receives authority outside the candidate set.**
 
-### 04 — Bounded AI recommendation
+## 04 — Bounded AI recommendation
 
 The AI chooses among the policy-approved candidates.
 
 In the current demo environment, a deterministic development provider is used so behavior remains reproducible while preserving the same decision boundary expected from an AI-backed provider.
 
-### 05 — Guardrail evaluation
+## 05 — Guardrail evaluation
 
 The recommendation is checked against deterministic constraints.
 
@@ -417,7 +429,7 @@ or:
 BLOCKED
 ```
 
-### 06 — Execution boundary
+## 06 — Execution boundary
 
 RECLAIM intentionally separates **authorization** from **execution**.
 
@@ -425,7 +437,7 @@ An authorized customer-facing recovery can result in a real Razorpay Payment Lin
 
 The customer then completes the payment through Razorpay.
 
-### 07 — Audit
+## 07 — Audit
 
 The evaluation is recorded in the ledger, including decision context, guardrail outcome, event identity, timestamps, and recovery artifacts.
 
@@ -541,7 +553,7 @@ Razorpay Payment Link
 Audit ledger
 ```
 
-### Important execution boundary
+## Important execution boundary
 
 RECLAIM does **not** claim unrestricted autonomous production card charging.
 
@@ -640,7 +652,7 @@ RECLAIM therefore maintains a deterministic, seeded simulator for measurement.
 
 The current benchmark compares the same seeded payment population using two strategies.
 
-### Current benchmark result
+## Current benchmark result
 
 | Metric | Fixed retry baseline | RECLAIM |
 |---|---:|---:|
@@ -668,7 +680,7 @@ The reason for using a seeded simulator is reproducibility:
 
 These two systems solve different problems.
 
-### Deterministic simulator
+## Deterministic simulator
 
 Best for:
 
@@ -678,7 +690,7 @@ Best for:
 - controlled failure scenarios
 - repeatable demonstrations
 
-### Razorpay Test Mode
+## Razorpay Test Mode
 
 Best for:
 
@@ -697,31 +709,31 @@ The benchmark stays deterministic without making the gateway integration fake.
 
 RECLAIM was built around a few principles.
 
-### Money is represented as integer paise
+## Money is represented as integer paise
 
 Amounts are kept as integer paise rather than floating-point rupees so financial calculations remain deterministic.
 
-### Policy is data-driven
+## Policy is data-driven
 
 Failure constraints and allowed actions are represented explicitly so system-wide invariants can be asserted.
 
-### AI is bounded
+## AI is bounded
 
 The model is a decision component, not an authority boundary.
 
-### Safety is executable
+## Safety is executable
 
 Important safety claims are implemented as checks and proofs rather than only documented in prose.
 
-### Ambiguity is resolved before money moves
+## Ambiguity is resolved before money moves
 
 Unknown payment state is reconciled instead of being treated as a normal decline.
 
-### Audit is part of the execution model
+## Audit is part of the execution model
 
 A decision that cannot be reconstructed is not a trustworthy automation.
 
-### The system can fall back safely
+## The system can fall back safely
 
 A deterministic fallback exists for situations where the AI decision path is unavailable or unsuitable.
 
@@ -786,13 +798,14 @@ RECLAIM/
 │   └── real recovery proof
 │
 ├── docs/
-│   └── reclaim-architecture.png
+│   ├── reclaim-architecture.png
+│   ├── ARCHITECTURE.md
+│   └── WHAT-BROKE-AT-2AM.md
 │
 ├── public/
 │   └── reclaim-logo.png
 │
 ├── README.md
-├── CHANGELOG.md
 ├── .env.example
 ├── next.config.ts
 ├── tsconfig.json
@@ -861,31 +874,31 @@ http://localhost:3000
 
 RECLAIM includes both deterministic and adversarial validation.
 
-### Type safety
+## Type safety
 
 ```bash
 npm run typecheck
 ```
 
-### Deterministic verification
+## Deterministic verification
 
 ```bash
 npm run verify
 ```
 
-### Safety proof
+## Safety proof
 
 ```bash
 npm run safety:proof
 ```
 
-### Real Razorpay recovery proof
+## Real Razorpay recovery proof
 
 ```bash
 npm run proof:recovery -- <paymentId>
 ```
 
-### Production build
+## Production build
 
 ```bash
 npm run build
@@ -999,6 +1012,8 @@ The key narrative is:
 
 RECLAIM is deployed as a Next.js application on Vercel.
 
+**Production:** [reclaim-ten-umber.vercel.app](https://reclaim-ten-umber.vercel.app/)
+
 The production environment requires:
 
 ```env
@@ -1012,10 +1027,10 @@ The Razorpay credentials are kept server-side.
 The production deployment should be configured so the Razorpay webhook endpoint points to:
 
 ```text
-https://YOUR_VERCEL_DOMAIN/api/razorpay/webhook
+https://reclaim-ten-umber.vercel.app/api/razorpay/webhook
 ```
 
-### Production verification
+## Production verification
 
 After deployment, verify:
 
@@ -1040,27 +1055,27 @@ The deployed site is intended to be a **Buildathon demonstration environment**, 
 
 RECLAIM is a Buildathon implementation and should be evaluated within that scope.
 
-### Test Mode
+## Test Mode
 
 The live gateway proof is performed against Razorpay Test Mode.
 
-### Customer-action execution boundary
+## Customer-action execution boundary
 
 The current recovery execution path creates a customer-facing Razorpay recovery artifact instead of silently performing arbitrary production re-charges.
 
-### Development AI provider
+## Development AI provider
 
 The current demo uses a deterministic development provider for reproducibility.
 
 The system is structured around a provider abstraction so a production model can be introduced without changing the policy/guardrail authority boundary.
 
-### Lightweight audit persistence
+## Lightweight audit persistence
 
 The audit ledger is designed to demonstrate append-only decision traceability.
 
 A production deployment would typically back this with durable, transactional storage and stronger retention guarantees.
 
-### Local webhook tunnel
+## Local webhook tunnel
 
 The local Cloudflare Quick Tunnel used during development is ephemeral.
 
@@ -1111,25 +1126,26 @@ That makes the system measurable, testable, explainable, and much easier to reas
 
 # 26. Submission artifacts
 
-The recommended submission package is:
+The repository contains the core submission artifacts:
 
 ```text
 README.md
+
 docs/
 ├── reclaim-architecture.png
 ├── ARCHITECTURE.md
-├── WHAT-BROKE-AT-2AM.md
-└── DEMO-SCRIPT.md
+└── WHAT-BROKE-AT-2AM.md
 ```
 
-and, where appropriate:
+Recommended additional proof artifacts for the final submission include:
 
 ```text
 screenshots/
 proof/
+demo/
 ```
 
-Recommended proof artifacts include:
+Useful proof artifacts include:
 
 - final UI screenshots
 - benchmark screenshot
@@ -1145,19 +1161,19 @@ Recommended proof artifacts include:
 
 RECLAIM has been validated across four dimensions.
 
-### Product
+## Product
 
 A working operator-facing payment recovery experience.
 
-### Engineering
+## Engineering
 
 A typed, modular payment-recovery control plane with a gateway abstraction.
 
-### Safety
+## Safety
 
 Deterministic policy, guardrails, reconciliation rules, ceilings, and adversarial proofs.
 
-### Integration
+## Integration
 
 Real Razorpay Test Mode operations, webhook verification, recovery-link creation, and audit recording.
 
