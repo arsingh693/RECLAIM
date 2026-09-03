@@ -1,67 +1,33 @@
 "use client";
 
-import { useState } from "react";
-
-interface DemoOutcome {
-  readonly paymentId: string;
-  readonly succeeded: boolean;
-  readonly recoveredPaise: number;
-  readonly declineCode: string | null;
-  readonly gatewayReference: string | null;
-  readonly attemptedAt: string;
-  readonly indeterminate: boolean;
-}
-
-interface DemoAuditEntry {
-  readonly paymentId: string;
-  readonly decision: {
-    readonly intervention: string;
-    readonly reasoning: string;
-    readonly source: "llm" | "fallback";
-  };
-  readonly guardrail: {
-    readonly allowed: boolean;
-    readonly blockedBy: readonly string[];
-    readonly notes: readonly string[];
-  };
-  readonly outcome: DemoOutcome | null;
-}
-
-interface DemoResult {
-  readonly payment: {
-    readonly id: string;
-    readonly amountPaise: number;
-    readonly method: string;
-    readonly declineCode: string;
-    readonly attemptsSoFar: number;
-    readonly customer: {
-      readonly successfulChargesLifetime: number;
-    };
-    readonly mandateCeilingPaise: number | null;
-  };
-
-  readonly finalPayment: {
-    readonly declineCode: string;
-    readonly attemptsSoFar: number;
-  };
-
-  readonly outcomes: readonly DemoOutcome[];
-
-  readonly decisionsMade: number;
-  readonly guardrailBlocks: number;
-  readonly aiFallbacks: number;
-  readonly humanEscalations: number;
-  readonly stopReason: string;
-  readonly auditTrail: readonly DemoAuditEntry[];
-}
+import { FormEvent, useState } from "react";
 
 interface RecoveryResponse {
-  readonly scenario: string;
-  readonly customerLabel: string;
-  readonly result: DemoResult;
+  readonly paymentId: string;
+  readonly status: string;
+  readonly declineCode: string;
+  readonly candidates: readonly string[];
+  readonly intervention: string | null;
+  readonly decisionSource: string;
+  readonly reasoning: string;
+  readonly confidence: number;
+  readonly scheduledFor: string | null;
+  readonly switchToMethod: string | null;
+  readonly splitAmountPaise: number | null;
+  readonly guardrail: boolean;
+  readonly blockedBy: readonly string[];
+  readonly execution: string;
+  readonly recoveryLink:
+    | {
+        readonly supported: boolean;
+        readonly url: string | null;
+        readonly gatewayReference: string | null;
+        readonly reason: string | null;
+      }
+    | null;
 }
 
-const SCENARIOS = [
+const scenarios = [
   {
     id: "insufficient_funds",
     label: "Insufficient funds",
@@ -80,113 +46,117 @@ const SCENARIOS = [
   },
   {
     id: "mandate_limit",
-    label: "Mandate limit exceeded",
+    label: "Mandate limit",
   },
 ] as const;
 
-type ScenarioId = (typeof SCENARIOS)[number]["id"];
-
-function formatPaise(paise: number): string {
-  return `₹${(paise / 100).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-function formatOutcome(outcome: DemoOutcome): string {
-  if (outcome.indeterminate) {
-    return "Indeterminate";
-  }
-
-  if (outcome.succeeded) {
-    return "Recovered";
-  }
-
-  return outcome.declineCode ?? "Declined";
-}
+type RecoveryScenario =
+  (typeof scenarios)[number]["id"];
 
 export default function RecoveryDemo() {
   const [scenario, setScenario] =
-    useState<ScenarioId>("insufficient_funds");
-
-  const [response, setResponse] =
+  useState<RecoveryScenario>(
+    scenarios[0].id,
+  );
+  const [result, setResult] =
     useState<RecoveryResponse | null>(null);
-
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] =
+    useState(false);
   const [error, setError] =
     useState<string | null>(null);
 
-  async function runDemo(): Promise<void> {
+  async function runDemo(
+    event?: FormEvent,
+  ) {
+    event?.preventDefault();
+
     setLoading(true);
     setError(null);
 
     try {
-      const result = await fetch("/api/recovery-demo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "/api/recovery-demo",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            scenario,
+          }),
         },
-        body: JSON.stringify({
-          scenario,
-        }),
-      });
+      );
 
-      const body = (await result.json()) as
-        | RecoveryResponse
-        | {
-            error: string;
-          };
+      const contentType =
+        response.headers.get(
+          "content-type",
+        ) ?? "";
 
-      if (!result.ok || "error" in body) {
+      const payload =
+        contentType.includes(
+          "application/json",
+        )
+          ? await response.json()
+          : {
+              error: await response.text(),
+            };
+
+      if (!response.ok) {
         throw new Error(
-          "error" in body
-            ? body.error
-            : "Recovery demo failed",
+          typeof payload?.error === "string"
+            ? payload.error
+            : "Recovery evaluation failed.",
         );
       }
 
-      setResponse(body);
-    } catch (caughtError: unknown) {
+      setResult(payload);
+    } catch (err) {
       setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Recovery demo failed",
+        err instanceof Error
+          ? err.message
+          : "Recovery evaluation failed.",
       );
+      setResult(null);
     } finally {
       setLoading(false);
     }
   }
 
-  const demo = response?.result ?? null;
-
   return (
     <div className="recovery-demo">
-      {/* ─────────────────────────────────────
-          CONTROL BAR
-      ───────────────────────────────────── */}
+      <div className="recovery-demo__header">
+        <div>
+          <span className="eyebrow">
+            DECISION SIMULATOR
+          </span>
+          <h3>
+            Test the recovery boundary
+          </h3>
+          <p>
+            RECLAIM evaluates each failure
+            against deterministic policy,
+            bounded AI selection, and
+            fail-closed guardrails.
+          </p>
+        </div>
+      </div>
 
-      <div className="demo-toolbar">
-        <div className="demo-selector-group">
-          <label
-            htmlFor="recovery-scenario"
-            className="demo-toolbar-label"
-          >
-            DEMO SCENARIO
-          </label>
-
+      <form
+        className="recovery-demo__controls"
+        onSubmit={runDemo}
+      >
+        <label>
+          Failure scenario
           <select
-            id="recovery-scenario"
-            className="demo-select"
             value={scenario}
             onChange={(event) =>
               setScenario(
-                event.target.value as ScenarioId,
+                event.target.value as RecoveryScenario,
               )
             }
-            disabled={loading}
           >
-            {SCENARIOS.map((item) => (
+            {scenarios.map((item) => (
               <option
                 key={item.id}
                 value={item.id}
@@ -195,336 +165,156 @@ export default function RecoveryDemo() {
               </option>
             ))}
           </select>
-        </div>
+        </label>
 
         <button
-          type="button"
-          className="demo-run-button"
-          onClick={runDemo}
+          type="submit"
           disabled={loading}
         >
-          <span>
-            {loading
-              ? "Evaluating..."
-              : "Evaluate recovery"}
-          </span>
-
-          {!loading && (
-            <span
-              aria-hidden="true"
-              className="demo-button-arrow"
-            >
-              →
-            </span>
-          )}
+          {loading
+            ? "Evaluating..."
+            : "Run recovery"}
         </button>
-      </div>
+      </form>
 
-      {/* ─────────────────────────────────────
-          ERROR
-      ───────────────────────────────────── */}
-
-      {error && (
-        <div className="demo-error">
-          <div className="demo-error-icon">!</div>
-
-          <div>
-            <strong>Demo error</strong>
-            <span>{error}</span>
-          </div>
+      {error ? (
+        <div className="recovery-demo__error">
+          {error}
         </div>
-      )}
+      ) : null}
 
-      {/* ─────────────────────────────────────
-          EMPTY STATE
-      ───────────────────────────────────── */}
-
-      {!demo && !loading && !error && (
-        <div className="demo-empty">
-          <div className="demo-empty-mark">
-            →
-          </div>
-
-          <div className="demo-empty-copy">
-            <strong>
-              Select a failure and run RECLAIM.
-            </strong>
-
-            <p>
-              The result below comes from the actual
-              recovery engine, not a mocked UI response.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────
-          LOADING
-      ───────────────────────────────────── */}
-
-      {loading && (
-        <div className="demo-loading">
-          <div className="loading-pulse" />
-
-          <div>
-            <strong>
-              RECLAIM is evaluating this payment.
-            </strong>
-
-            <p>
-              Policy <span>→</span> AI <span>→</span>{" "}
-              guardrails <span>→</span> executor{" "}
-              <span>→</span> gateway
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────
-          RESULT
-      ───────────────────────────────────── */}
-
-      {demo && response && (
-        <div className="demo-result-shell">
-          {/* PAYMENT OVERVIEW */}
-
-          <div className="demo-summary">
-            <div className="demo-summary-payment">
-              <span className="field-label">
-                PAYMENT
+      {result ? (
+        <div className="recovery-demo__result">
+          <div className="recovery-demo__decision">
+            <div>
+              <span className="eyebrow">
+                DECISION CENTER
               </span>
 
-              <strong className="demo-payment-id">
-                {demo.payment.id}
-              </strong>
+              <h4>
+                {result.intervention ??
+                  "No intervention"}
+              </h4>
 
-              <span className="demo-method">
-                {demo.payment.method}
-              </span>
+              <p>
+                {result.reasoning}
+              </p>
             </div>
 
-            <div className="demo-summary-amount">
-              <span className="field-label">
-                AMOUNT
-              </span>
+            <div
+              className={
+                result.guardrail
+                  ? "status-badge status-badge--allowed"
+                  : "status-badge status-badge--blocked"
+              }
+            >
+              {result.guardrail
+                ? "AUTHORIZED"
+                : "BLOCKED"}
+            </div>
+          </div>
 
-              <strong className="demo-amount">
-                {formatPaise(
-                  demo.payment.amountPaise,
+          <div className="recovery-demo__grid">
+            <div className="recovery-demo__card">
+              <span>Policy</span>
+              <strong>
+                {result.candidates.join(
+                  ", ",
                 )}
               </strong>
             </div>
 
-            <div className="demo-summary-decline">
-              <span className="field-label">
-                DECLINE
-              </span>
+            <div className="recovery-demo__card">
+              <span>Decision source</span>
+              <strong>
+                {result.decisionSource}
+              </strong>
+            </div>
 
-              <strong className="demo-decline">
-                {demo.payment.declineCode}
+            <div className="recovery-demo__card">
+              <span>Decision source</span>
+              <strong>
+                {result.decisionSource}
+              </strong>
+            </div>
+
+            <div className="recovery-demo__card">
+              <span>Confidence</span>
+              <strong>
+                {(
+                  result.confidence * 100
+                ).toFixed(0)}
+                %
+              </strong>
+            </div>
+
+            <div className="recovery-demo__card">
+              <span>Guardrails</span>
+              <strong>
+                {result.guardrail
+                  ? "Allowed"
+                  : "Blocked"}
+              </strong>
+            </div>
+
+            <div className="recovery-demo__card">
+              <span>Execution</span>
+              <strong>
+                {result.execution}
               </strong>
             </div>
           </div>
 
-          {/* CUSTOMER SIGNAL */}
-
-          <div className="demo-customer">
-            <div className="demo-customer-copy">
-              <span className="field-label">
-                CUSTOMER SIGNAL
-              </span>
-
-              <strong>
-                {response.customerLabel}
-              </strong>
+          <div className="recovery-demo__trace">
+            <div className="recovery-demo__trace-step">
+              <span>01</span>
+              <strong>Policy</strong>
+              <small>
+                Candidate set generated
+              </small>
             </div>
 
-            <div className="demo-customer-stat">
+            <div className="recovery-demo__trace-step">
+              <span>02</span>
               <strong>
-                {
-                  demo.payment.customer
-                    .successfulChargesLifetime
-                }
+                {result.decisionSource}
               </strong>
+              <small>
+                Policy-bounded decision
+              </small>
+            </div>
 
-              <span>
-                successful charges
-              </span>
+            <div className="recovery-demo__trace-step">
+              <span>03</span>
+              <strong>Guardrails</strong>
+              <small>
+                Final authorization
+              </small>
+            </div>
+
+            <div className="recovery-demo__trace-step">
+              <span>04</span>
+              <strong>
+                {result.execution}
+              </strong>
+              <small>
+                Execution boundary
+              </small>
             </div>
           </div>
 
-          {/* RECOVERY TRACE */}
-
-          <div className="demo-trace">
-            <div className="demo-trace-header">
-              <div>
-                <span className="field-label">
-                  RECOVERY TRACE
-                </span>
-
-                <strong>
-                  Decision path
-                </strong>
-              </div>
-
-              <span className="demo-trace-meta">
-                {demo.decisionsMade} decisions
-                <span>·</span>
-                {demo.outcomes.length} attempts
-              </span>
-            </div>
-
-            <div className="demo-events">
-              {demo.auditTrail.map(
-                (entry, index) => {
-                  const outcome =
-                    entry.outcome;
-
-                  const isBlocked =
-                    !entry.guardrail.allowed;
-
-                  const isSuccess =
-                    outcome?.succeeded === true;
-
-                  const isReconcile =
-                    entry.decision.intervention ===
-                    "RECONCILE_THEN_DECIDE";
-
-                  const isLast =
-                    index ===
-                    demo.auditTrail.length - 1;
-
-                  const eventClass = [
-                    "demo-event",
-                    isBlocked ? "blocked" : "",
-                    isSuccess ? "success" : "",
-                    isReconcile
-                      ? "reconcile"
-                      : "",
-                    !isBlocked &&
-                    !isSuccess &&
-                    !isReconcile &&
-                    isLast
-                      ? "active"
-                      : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ");
-
-                  return (
-                    <div
-                      className={eventClass}
-                      key={`${entry.paymentId}-${index}`}
-                    >
-                      <div className="demo-event-number">
-                        {String(index + 1).padStart(
-                          2,
-                          "0",
-                        )}
-                      </div>
-
-                      <div className="demo-event-main">
-                        <div className="demo-event-heading">
-                          <span className="demo-event-type">
-                            {
-                              entry.decision
-                                .intervention
-                            }
-                          </span>
-
-                          <strong>
-                            {entry.guardrail
-                              .allowed
-                              ? outcome
-                                ? formatOutcome(
-                                    outcome,
-                                  )
-                                : "Decision accepted"
-                              : "Blocked by guardrail"}
-                          </strong>
-                        </div>
-
-                        <p>
-                          {entry.guardrail
-                            .allowed
-                            ? entry.decision
-                                .reasoning
-                            : entry.guardrail
-                                .blockedBy
-                                .join(" · ")}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`demo-event-state ${
-                          entry.guardrail.allowed
-                            ? "pass"
-                            : "block"
-                        }`}
-                      >
-                        {entry.guardrail.allowed
-                          ? "PASS"
-                          : "BLOCK"}
-                      </span>
-                    </div>
-                  );
-                },
-              )}
-            </div>
-          </div>
-
-          {/* FINAL RESULT */}
-
-          <div className="demo-result">
-            <div className="demo-final-state">
-              <span className="field-label">
-                FINAL STATE
-              </span>
-
-              <strong>
-                {demo.stopReason}
-              </strong>
-            </div>
-
-            <div>
-              <span className="field-label">
-                RECOVERED
-              </span>
-
-              <strong className="demo-result-money">
-                {formatPaise(
-                  demo.outcomes.reduce(
-                    (total, outcome) =>
-                      total +
-                      outcome.recoveredPaise,
-                    0,
-                  ),
-                )}
-              </strong>
-            </div>
-
-            <div>
-              <span className="field-label">
-                GUARDRAIL BLOCKS
-              </span>
-
-              <strong>
-                {demo.guardrailBlocks}
-              </strong>
-            </div>
-
-            <div>
-              <span className="field-label">
-                AI FALLBACKS
-              </span>
-
-              <strong>
-                {demo.aiFallbacks}
-              </strong>
-            </div>
-          </div>
+          {result.recoveryLink?.url ? (
+            <a
+              href={result.recoveryLink.url}
+              target="_blank"
+              rel="noreferrer"
+              className="recovery-demo__link"
+            >
+              Open recovery link
+            </a>
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

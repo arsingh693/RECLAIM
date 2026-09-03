@@ -581,7 +581,7 @@ export async function runRecovery(
  * Timing, alternate rail, and split amount are resolved deterministically.
  * The AI cannot directly set execution parameters.
  */
-function buildDecision(
+export function buildDecision(
   payment: FailedPayment,
   agentResult: Awaited<
     ReturnType<typeof decideWithAgent>
@@ -668,8 +668,21 @@ function buildScheduledFor(
     delayHours = 48;
   }
 
+  /*
+   * Recovery may be evaluated long after the original failure.
+   * Never produce a schedule in the past.
+   *
+   * We preserve the original failure time when it is recent enough,
+   * otherwise schedule relative to the current evaluation time.
+   */
+  const schedulingBase =
+    Math.max(
+      failedAt,
+      Date.now(),
+    );
+
   return new Date(
-    failedAt +
+    schedulingBase +
       delayHours *
         60 *
         60 *

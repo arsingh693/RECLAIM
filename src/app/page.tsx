@@ -5,7 +5,11 @@ import {
   BENCHMARK_SEED,
 } from "./data/benchmark";
 
+import SystemProofPanel from "./components/SystemProofPanel";
+import RealRecoveryConsole from "./components/RealRecoveryConsole";
 import RecoveryDemo from "./components/RecoveryDemo";
+import RazorpayCheckout from "./components/RazorpayCheckout";
+import AuditLedger from "./components/AuditLedger";
 
 const safetyChecks = [
   "Candidate actions contained by taxonomy",
@@ -29,32 +33,59 @@ const interventions = [
 ];
 
 export default function Home() {
+  const razorpayKeyId =
+    process.env.RAZORPAY_KEY_ID ?? "";
+
   return (
-    <main className="site">
-      {/* =====================================================
-          NAVIGATION
-          ===================================================== */}
+    <main
+      className="site"
+      data-razorpay-key={razorpayKeyId}
+    >
       <nav className="nav">
         <div className="nav-inner">
           <a
-  className="logo"
-  href="#overview"
-  aria-label="RECLAIM — Autonomous Payment Recovery"
->
-  <span className="logo-symbol">R</span>
+            className="logo"
+            href="#overview"
+            aria-label="RECLAIM — Autonomous Payment Recovery"
+          >
+            <span className="logo-symbol">
+              <img
+                src="/reclaim-logo.png"
+                alt="RECLAIM"
+              />
+            </span>
 
-  <span className="logo-copy">
-    <strong>RECLAIM</strong>
-    <small>Autonomous Payment Recovery</small>
-  </span>
-</a>
+            <span className="logo-copy">
+              <strong>RECLAIM</strong>
+              <small>
+                Autonomous Payment Recovery
+              </small>
+            </span>
+          </a>
 
-          <div className="nav-links">
-            <a href="#overview">Overview</a>
-            <a href="#recovery">Engine</a>
-            <a href="#benchmark">Benchmark</a>
-            <a href="#safety">Safety</a>
-            <a href="#proof">Proof</a>
+          <div
+            className="nav-links"
+            aria-label="Primary navigation"
+          >
+            <a href="#overview">
+              Overview
+            </a>
+
+            <a href="#recovery">
+              Engine
+            </a>
+
+            <a href="#benchmark">
+              Benchmark
+            </a>
+
+            <a href="#safety">
+              Safety
+            </a>
+
+            <a href="#proof">
+              Proof
+            </a>
           </div>
 
           <div className="nav-actions">
@@ -73,9 +104,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* =====================================================
-          HERO
-          ===================================================== */}
       <section
         className="hero"
         id="overview"
@@ -97,10 +125,11 @@ export default function Home() {
             </h1>
 
             <p>
-              RECLAIM uses AI to recommend recovery actions
-              inside a closed, deterministic action space.
-              Policy and guardrails decide what is actually
-              allowed to execute.
+              RECLAIM uses AI to recommend
+              recovery actions inside a closed,
+              deterministic action space. Policy
+              and guardrails decide what is
+              actually allowed to execute.
             </p>
 
             <div className="hero-actions">
@@ -113,9 +142,9 @@ export default function Home() {
 
               <a
                 className="button button-link"
-                href="#proof"
+                href="#benchmark"
               >
-                View proof
+                View benchmark
               </a>
             </div>
 
@@ -134,10 +163,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* =================================================
-              PRODUCT PREVIEW
-              ================================================= */}
-          <div className="hero-product">
+          <div
+            className="hero-product"
+            aria-label="RECLAIM recovery preview"
+          >
             <div className="product-window">
               <div className="window-header">
                 <div>
@@ -145,7 +174,9 @@ export default function Home() {
                     LIVE RECOVERY
                   </span>
 
-                  <strong>Payment decision</strong>
+                  <strong>
+                    Payment decision
+                  </strong>
                 </div>
 
                 <span className="window-status">
@@ -160,7 +191,9 @@ export default function Home() {
                     PAYMENT
                   </span>
 
-                  <strong>pay_sim_0042</strong>
+                  <strong>
+                    pay_sim_0042
+                  </strong>
                 </div>
 
                 <div className="payment-amount">
@@ -168,7 +201,9 @@ export default function Home() {
                     AMOUNT
                   </span>
 
-                  <strong>₹4,990.00</strong>
+                  <strong>
+                    ₹4,990.00
+                  </strong>
                 </div>
               </div>
 
@@ -211,7 +246,10 @@ export default function Home() {
                   </span>
 
                   <div>
-                    <small>POLICY</small>
+                    <small>
+                      POLICY
+                    </small>
+
                     <strong>
                       Closed candidate set
                     </strong>
@@ -248,14 +286,19 @@ export default function Home() {
                   </span>
 
                   <div>
-                    <small>GUARDRAIL</small>
+                    <small>
+                      GUARDRAIL
+                    </small>
 
                     <strong>
                       Permitted
                     </strong>
                   </div>
 
-                  <span className="allowed">
+                  <span
+                    className="allowed"
+                    aria-label="Allowed"
+                  >
                     ✓
                   </span>
                 </div>
@@ -271,38 +314,186 @@ export default function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* These communicate benchmark context rather
-                than pretending to be fields on the payment. */}
-            <div className="floating-chip chip-one">
-              <span>+19.44%</span>
-              recovery improvement
+      <section
+        className="trust-strip"
+        aria-label="Capabilities"
+      >
+        <div className="trust-inner">
+          <span>
+            BUILT FOR PAYMENT OPERATIONS
+          </span>
+
+          <span>
+            DETERMINISTIC POLICY
+          </span>
+
+          <span>
+            BOUNDED AI
+          </span>
+
+          <span>
+            AUDITABLE EXECUTION
+          </span>
+
+          <span>
+            RAZORPAY-READY GATEWAY ADAPTER
+          </span>
+        </div>
+      </section>
+
+      <section
+        className="section recovery-section recovery-featured"
+        id="recovery"
+      >
+        <div className="section-inner">
+          <div className="recovery-feature-header">
+            <div className="recovery-feature-copy">
+              <div className="eyebrow">
+                LIVE RECOVERY ENGINE
+              </div>
+
+              <h2>
+                See RECLAIM
+                <br />
+                make the decision.
+              </h2>
+
+              <p>
+                This is the actual recovery
+                engine. Select a payment failure,
+                run the system, and inspect every
+                decision from policy through
+                execution.
+              </p>
             </div>
 
-            <div className="floating-chip chip-two">
-              <span>83</span>
-              total attempts
+            <div className="recovery-feature-meta">
+              <div className="engine-status">
+                <span className="mode-dot" />
+
+                <strong>
+                  ENGINE ONLINE
+                </strong>
+              </div>
+
+              <div className="engine-meta-copy">
+                <span>
+                  DETERMINISTIC
+                </span>
+
+                <span>•</span>
+
+                <span>
+                  AUDITABLE
+                </span>
+
+                <span>•</span>
+
+                <span>
+                  LIVE DEMO
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="engine-intro-bar">
+            <div>
+              <span className="field-label">
+                INTERACTIVE DEMONSTRATION
+              </span>
+
+              <strong>
+                Run a real recovery scenario
+              </strong>
+            </div>
+
+            <div
+              className="engine-flow-label"
+              aria-hidden="true"
+            >
+              <span>
+                POLICY
+              </span>
+
+              <i>→</i>
+
+              <span>
+                AI
+              </span>
+
+              <i>→</i>
+
+              <span>
+                GUARDRAILS
+              </span>
+
+              <i>→</i>
+
+              <span>
+                GATEWAY
+              </span>
+            </div>
+          </div>
+
+          {/* Single RecoveryDemo instance */}
+          <div className="live-engine">
+            <RecoveryDemo />
+          </div>
+
+          <div
+            style={{
+              marginTop: 20,
+              padding: "20px 24px",
+              border:
+                "1px solid var(--line-strong)",
+              borderRadius:
+                "var(--radius-md)",
+              background: "#fff",
+            }}
+          >
+            <div>
+              <span className="field-label">
+                REAL RAZORPAY TEST
+              </span>
+
+              <strong
+                style={{
+                  display: "block",
+                  marginTop: 6,
+                }}
+              >
+                Execute a real ₹100 Test Mode
+                payment
+              </strong>
+            </div>
+
+            <div
+              style={{
+                marginTop: 16,
+              }}
+            >
+              <RazorpayCheckout
+                amountPaise={10000}
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* =====================================================
-          TRUST STRIP
-          ===================================================== */}
-      <section className="trust-strip">
-        <div className="trust-inner">
-          <span>BUILT FOR PAYMENT OPERATIONS</span>
-          <span>DETERMINISTIC POLICY</span>
-          <span>BOUNDED AI</span>
-          <span>AUDITABLE EXECUTION</span>
-          <span>RAZORPAY-READY GATEWAY ADAPTER</span>
+      <section className="section operations-proof-section">
+        <div className="section-inner">
+          <RealRecoveryConsole />
+
+          <AuditLedger />
+
+          <SystemProofPanel />
         </div>
       </section>
 
-      {/* =====================================================
-          BENCHMARK
-          ===================================================== */}
       <section
         className="section performance-section"
         id="benchmark"
@@ -331,11 +522,15 @@ export default function Home() {
           <div className="performance-panel">
             <div className="performance-header">
               <div>
-                <strong>{BENCHMARK_SEED}</strong>
+                <strong>
+                  {BENCHMARK_SEED}
+                </strong>
 
-<span>
-  {BENCHMARK_PAYMENT_COUNT} payments · deterministic seed
-</span>
+                <span>
+                  {BENCHMARK_PAYMENT_COUNT}{" "}
+                  payments · deterministic
+                  seed
+                </span>
               </div>
 
               <span className="verified">
@@ -345,115 +540,82 @@ export default function Home() {
 
             <div className="performance-table">
               <div className="performance-row performance-labels">
-                <span>METRIC</span>
-                <span>BASELINE</span>
-                <span>RECLAIM</span>
-                <span>CHANGE</span>
+                <span>
+                  METRIC
+                </span>
+
+                <span>
+                  BASELINE
+                </span>
+
+                <span>
+                  RECLAIM
+                </span>
+
+                <span>
+                  CHANGE
+                </span>
               </div>
 
-              {BENCHMARK_METRICS.map((row) => (
-                <div
-                  className="performance-row"
-                  key={row.label}
-                >
-                  <strong>{row.label}</strong>
+              {BENCHMARK_METRICS.map(
+                (row) => (
+                  <div
+                    className="performance-row"
+                    key={row.label}
+                  >
+                    <strong>
+                      {row.label}
+                    </strong>
 
-                  <span>{row.baseline}</span>
+                    <span>
+                      {row.baseline}
+                    </span>
 
-                  <span className="reclaim-value">
-                    {row.reclaim}
-                  </span>
+                    <span className="reclaim-value">
+                      {row.reclaim}
+                    </span>
 
-                  <span className="change">
-                    {row.improvement}
-                  </span>
-                </div>
-              ))}
+                    <span className="change">
+                      {row.improvement}
+                    </span>
+                  </div>
+                ),
+              )}
             </div>
 
             <div className="performance-callout">
               <div className="callout-number">
-  +{BENCHMARK.improvement.recoveryRatePercent.toFixed(2)}%
-</div>
-
-<div>
-  <strong>
-    relative recovery improvement
-  </strong>
-
-  <p>
-    RECLAIM recovered ₹17,744.50 more while
-    making 34 fewer charge attempts than the
-    fixed retry baseline.
-  </p>
-</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================
-          RECOVERY ENGINE
-          ===================================================== */}
-      <section
-        className="section recovery-section"
-        id="recovery"
-      >
-        <div className="section-inner">
-          <div className="section-intro centered">
-            <div>
-              <div className="eyebrow">
-                RECOVERY ENGINE
+                +
+                {BENCHMARK.improvement.recoveryRatePercent.toFixed(
+                  2,
+                )}
+                %
               </div>
 
-              <h2>
-                One failed payment.
-                <br />
-                A complete recovery decision.
-              </h2>
+              <div>
+                <strong>
+                  relative recovery improvement
+                </strong>
 
-              <p>
-                Every transition is visible, constrained,
-                and auditable.
-              </p>
+                <p>
+  RECLAIM recovered{" "}
+  {`₹${(BENCHMARK.improvement.recoveredDifferencePaise / 100).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )}`}{" "}
+  more while making{" "}
+  {Math.abs(BENCHMARK.improvement.attemptDifference)} fewer
+  charge attempts than the fixed retry baseline.
+</p>
+              </div>
             </div>
           </div>
-
-          <section
-  className="section recovery-section"
-  id="recovery"
->
-  <div className="section-inner">
-    <div className="section-intro centered">
-      <div>
-        <div className="eyebrow">
-          RECOVERY ENGINE
-        </div>
-
-        <h2>
-          One failed payment.
-          <br />
-          A complete recovery decision.
-        </h2>
-
-        <p>
-          Run the actual recovery engine against a
-          deterministic payment scenario.
-        </p>
-      </div>
-    </div>
-
-    <div className="live-engine">
-      <RecoveryDemo />
-    </div>
-  </div>
-</section>
         </div>
       </section>
 
-      {/* =====================================================
-          SAFETY
-          ===================================================== */}
       <section
         className="safety-section"
         id="safety"
@@ -473,9 +635,11 @@ export default function Home() {
             </div>
 
             <div className="section-side-copy light">
-              AI operates inside the decision boundary.
+              AI operates inside the decision
+              boundary.
               <br />
-              It never owns the authority to execute.
+              It never owns the authority to
+              execute.
             </div>
           </div>
 
@@ -488,15 +652,21 @@ export default function Home() {
                     key={check}
                   >
                     <span>
-                      {String(index + 1).padStart(
+                      {String(
+                        index + 1,
+                      ).padStart(
                         2,
                         "0",
                       )}
                     </span>
 
-                    <strong>{check}</strong>
+                    <strong>
+                      {check}
+                    </strong>
 
-                    <b>PASS</b>
+                    <b>
+                      PASS
+                    </b>
                   </div>
                 ),
               )}
@@ -509,7 +679,9 @@ export default function Home() {
 
               <div className="authority-box">
                 <span>AI</span>
-                <strong>RECOMMENDS</strong>
+                <strong>
+                  RECOMMENDS
+                </strong>
               </div>
 
               <div className="authority-arrow">
@@ -518,7 +690,9 @@ export default function Home() {
 
               <div className="authority-box">
                 <span>POLICY</span>
-                <strong>CONSTRAINS</strong>
+                <strong>
+                  CONSTRAINS
+                </strong>
               </div>
 
               <div className="authority-arrow">
@@ -526,8 +700,13 @@ export default function Home() {
               </div>
 
               <div className="authority-box primary">
-                <span>GUARDRAILS</span>
-                <strong>DECIDE</strong>
+                <span>
+                  GUARDRAILS
+                </span>
+
+                <strong>
+                  DECIDE
+                </strong>
               </div>
 
               <div className="authority-arrow">
@@ -535,17 +714,19 @@ export default function Home() {
               </div>
 
               <div className="authority-box">
-                <span>GATEWAY</span>
-                <strong>EXECUTES</strong>
+                <span>
+                  GATEWAY
+                </span>
+
+                <strong>
+                  EXECUTES
+                </strong>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* =====================================================
-          POLICY
-          ===================================================== */}
       <section className="section policy-section">
         <div className="section-inner">
           <div className="section-intro">
@@ -560,20 +741,33 @@ export default function Home() {
             </div>
 
             <div className="section-side-copy">
-              The model chooses from permitted recovery
-              actions. It never invents the strategy.
+              The model chooses from permitted
+              recovery actions. It never invents
+              the strategy.
             </div>
           </div>
 
           <div className="policy-table">
             <div className="policy-row policy-head">
-              <span>INTERVENTION</span>
-              <span>DECISIONS</span>
-              <span>OBSERVED RESULT</span>
+              <span>
+                INTERVENTION
+              </span>
+
+              <span>
+                DECISIONS
+              </span>
+
+              <span>
+                OBSERVED RESULT
+              </span>
             </div>
 
             {interventions.map(
-              ([name, count, result]) => (
+              ([
+                name,
+                count,
+                result,
+              ]) => (
                 <div
                   className="policy-row"
                   key={name}
@@ -582,9 +776,13 @@ export default function Home() {
                     {name}
                   </span>
 
-                  <span>{count}</span>
+                  <span>
+                    {count}
+                  </span>
 
-                  <span>{result}</span>
+                  <span>
+                    {result}
+                  </span>
                 </div>
               ),
             )}
@@ -592,9 +790,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* =====================================================
-          ENGINEERING LOG
-          ===================================================== */}
       <section className="incident-section">
         <div className="section-inner">
           <div className="section-intro">
@@ -609,13 +804,16 @@ export default function Home() {
             </div>
 
             <div className="section-side-copy light">
-              Measure it. Trace it. Fix it. Re-run it.
+              Measure it. Trace it. Fix it.
+              Re-run it.
             </div>
           </div>
 
           <div className="incident-log">
             <div className="incident-row failure">
-              <span>01</span>
+              <span>
+                01
+              </span>
 
               <div className="incident-time">
                 02:14
@@ -623,18 +821,22 @@ export default function Home() {
 
               <div>
                 <strong>
-                  Recovery benchmark falls to 1.95%
+                  Recovery benchmark falls to
+                  1.95%
                 </strong>
 
                 <p>
-                  RECLAIM was recovering dramatically less
-                  than the fixed retry baseline.
+                  RECLAIM was recovering
+                  dramatically less than the
+                  fixed retry baseline.
                 </p>
               </div>
             </div>
 
             <div className="incident-row">
-              <span>02</span>
+              <span>
+                02
+              </span>
 
               <div className="incident-time">
                 02:27
@@ -646,14 +848,17 @@ export default function Home() {
                 </strong>
 
                 <p>
-                  Candidate actions were not completely
-                  aligned with the hard decline taxonomy.
+                  Candidate actions were not
+                  completely aligned with the
+                  hard decline taxonomy.
                 </p>
               </div>
             </div>
 
             <div className="incident-row">
-              <span>03</span>
+              <span>
+                03
+              </span>
 
               <div className="incident-time">
                 03:06
@@ -665,15 +870,18 @@ export default function Home() {
                 </strong>
 
                 <p>
-                  The benchmark was moved to the multi-step
-                  recovery runner and candidate containment
-                  was enforced.
+                  The benchmark was moved to
+                  the multi-step recovery runner
+                  and candidate containment was
+                  enforced.
                 </p>
               </div>
             </div>
 
             <div className="incident-row success-row">
-              <span>04</span>
+              <span>
+                04
+              </span>
 
               <div className="incident-time">
                 03:32
@@ -681,18 +889,27 @@ export default function Home() {
 
               <div>
                 <strong>
-                  Recovery reaches 18.51%
-                </strong>
-
-                <p>
-                  The corrected system recovered ₹109,029.50
-                  with 83 charge attempts.
-                </p>
+  Recovery reaches{" "}
+  {(BENCHMARK.reclaim.recoveryRate * 100).toFixed(2)}%
+</strong>
+<p>
+  The corrected system recovered{" "}
+  {`₹${(BENCHMARK.reclaim.recoveredPaise / 100).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )}`}{" "}
+  with {BENCHMARK.reclaim.attempts} charge attempts.
+</p>
               </div>
             </div>
 
             <div className="incident-row success-row">
-              <span>05</span>
+              <span>
+                05
+              </span>
 
               <div className="incident-time">
                 03:40
@@ -704,9 +921,10 @@ export default function Home() {
                 </strong>
 
                 <p>
-                  Taxonomy, AI boundary, gateway isolation,
-                  timeout, attempt-ceiling, risk and mandate
-                  tests all pass.
+                  Taxonomy, AI boundary,
+                  gateway isolation, timeout,
+                  attempt-ceiling, risk and
+                  mandate tests all pass.
                 </p>
               </div>
             </div>
@@ -714,9 +932,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* =====================================================
-          PROOF
-          ===================================================== */}
       <section
         className="section proof-section"
         id="proof"
@@ -725,7 +940,7 @@ export default function Home() {
           <div className="proof-banner">
             <div className="proof-copy">
               <div className="eyebrow">
-                DETERMINISTIC PROOF
+                DETERMINISTIC SAFETY PROOF
               </div>
 
               <h2>
@@ -737,39 +952,56 @@ export default function Home() {
               </h2>
 
               <p>
-                Proof run recovered ₹37,985.50 with zero AI
-                fallbacks. Safety assertions passed.
+                A separate deterministic proof run recovered ₹37,985.50 with
+  zero AI fallbacks. Adversarial safety assertions passed.
               </p>
             </div>
 
             <div className="proof-stats">
               <div>
-                <strong>15</strong>
-                <span>Recovered</span>
+                <strong>
+                  15
+                </strong>
+
+                <span>
+                  Recovered
+                </span>
               </div>
 
               <div>
-                <strong>40</strong>
-                <span>Human escalations</span>
+                <strong>
+                  40
+                </strong>
+
+                <span>
+                  Human escalations
+                </span>
               </div>
 
               <div>
-                <strong>12</strong>
-                <span>Mandate blocks</span>
+                <strong>
+                  12
+                </strong>
+
+                <span>
+                  Mandate blocks
+                </span>
               </div>
 
               <div>
-                <strong>0</strong>
-                <span>AI fallbacks</span>
+                <strong>
+                  0
+                </strong>
+
+                <span>
+                  AI fallbacks
+                </span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* =====================================================
-          FINAL CTA
-          ===================================================== */}
       <section className="final-cta">
         <div className="section-inner">
           <div className="cta-inner">
@@ -790,7 +1022,8 @@ export default function Home() {
                 className="button button-light"
                 href="#recovery"
               >
-                Run the demo <span>→</span>
+                Run the demo{" "}
+                <span>→</span>
               </a>
 
               <a
@@ -804,9 +1037,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* =====================================================
-          FOOTER
-          ===================================================== */}
       <footer className="footer">
         <div className="section-inner footer-inner">
           <span className="footer-brand">
@@ -814,8 +1044,8 @@ export default function Home() {
           </span>
 
           <span>
-            Deterministic recovery · bounded autonomy ·
-            auditable execution
+            Deterministic recovery · bounded
+            autonomy · auditable execution
           </span>
         </div>
       </footer>

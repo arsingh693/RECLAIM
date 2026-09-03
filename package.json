@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "submission:check": "node scripts/submission-check.mjs",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
@@ -12,7 +13,11 @@
     "experiment": "tsx scripts/runExperiment.ts",
     "seed": "tsx scripts/seed.ts",
     "proof": "tsx scripts/checkProof.ts",
-    "safety:proof": "tsx scripts/checkSafetyProof.ts"
+    "safety:proof": "tsx scripts/checkSafetyProof.ts",
+    "proof:webhook": "node scripts/prove-webhook-idempotency.mjs",
+"proof:recovery": "node scripts/prove-real-recovery.mjs",
+"proof:system": "node scripts/prove-system.mjs",
+"submission:check": "node scripts/submission-check.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
@@ -27,5 +32,9 @@
     "@types/react-dom": "^19.1.0",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2"
-  }
+  },
+  "proof:webhook": "node scripts/prove-webhook-idempotency.mjs",
+"proof:recovery": "node scripts/prove-real-recovery.mjs",
+"proof:system": "node scripts/prove-system.mjs",
+"submission:check": "node scripts/submission-check.mjs"
 }

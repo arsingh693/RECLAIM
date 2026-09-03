@@ -1,24 +1,9 @@
-import {
+import type {
   AIDecisionRequest,
   AIDecisionResponse,
   AIProvider,
 } from "./types";
 
-/**
- * Deterministic provider used during development and evaluation.
- *
- * It deliberately behaves like a conservative decision model:
- * it chooses only from the candidate actions supplied by the policy.
- *
- * This gives us:
- * - reproducible runs
- * - no API key requirement
- * - deterministic benchmark results
- * - a reliable fallback when the real model is unavailable
- *
- * The production Gemini provider will implement the exact same
- * AIProvider interface.
- */
 export class StubAIProvider implements AIProvider {
   async decide(
     request: AIDecisionRequest,
@@ -27,7 +12,7 @@ export class StubAIProvider implements AIProvider {
 
     if (candidates.length === 0) {
       throw new Error(
-        "Stub AI cannot decide without permitted candidates",
+        "No policy-approved candidate actions available.",
       );
     }
 
@@ -44,10 +29,6 @@ export class StubAIProvider implements AIProvider {
       "STOP_PERMANENT",
     ] as const;
 
-    /**
-     * Prefer actions according to the deterministic priority above,
-     * but never select something outside the policy candidate set.
-     */
     const selected = preferredOrder
       .map((intervention) =>
         candidates.find(
@@ -58,13 +39,13 @@ export class StubAIProvider implements AIProvider {
       .find(
         (
           candidate,
-        ): candidate is AIDecisionRequest["candidates"][number] =>
+        ): candidate is (typeof candidates)[number] =>
           candidate !== undefined,
       );
 
     if (!selected) {
       throw new Error(
-        "Stub AI could not select a permitted intervention",
+        "Unable to select a policy-approved intervention.",
       );
     }
 
@@ -79,7 +60,7 @@ export class StubAIProvider implements AIProvider {
           .map((candidate) => candidate.intervention)
           .join(", ")}.`,
       ].join(" "),
-      confidence: 0.75,
+      confidence: 0.75
     };
   }
 }
