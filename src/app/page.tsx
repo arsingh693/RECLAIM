@@ -790,147 +790,128 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="incident-section">
-        <div className="section-inner">
-          <div className="section-intro">
-            <div>
-              <div className="eyebrow">
-                ENGINEERING LOG
-              </div>
-
-              <h2>
-                What broke at 2 AM.
-              </h2>
-            </div>
-
-            <div className="section-side-copy light">
-              Measure it. Trace it. Fix it.
-              Re-run it.
-            </div>
-          </div>
-
-          <div className="incident-log">
-            <div className="incident-row failure">
-              <span>
-                01
-              </span>
-
-              <div className="incident-time">
-                02:14
-              </div>
-
-              <div>
-                <strong>
-                  Recovery benchmark falls to
-                  1.95%
-                </strong>
-
-                <p>
-                  RECLAIM was recovering
-                  dramatically less than the
-                  fixed retry baseline.
-                </p>
-              </div>
-            </div>
-
-            <div className="incident-row">
-              <span>
-                02
-              </span>
-
-              <div className="incident-time">
-                02:27
-              </div>
-
-              <div>
-                <strong>
-                  Trace reveals policy mismatch
-                </strong>
-
-                <p>
-                  Candidate actions were not
-                  completely aligned with the
-                  hard decline taxonomy.
-                </p>
-              </div>
-            </div>
-
-            <div className="incident-row">
-              <span>
-                03
-              </span>
-
-              <div className="incident-time">
-                03:06
-              </div>
-
-              <div>
-                <strong>
-                  Recovery lifecycle corrected
-                </strong>
-
-                <p>
-                  The benchmark was moved to
-                  the multi-step recovery runner
-                  and candidate containment was
-                  enforced.
-                </p>
-              </div>
-            </div>
-
-            <div className="incident-row success-row">
-              <span>
-                04
-              </span>
-
-              <div className="incident-time">
-                03:32
-              </div>
-
-              <div>
-                <strong>
-  Recovery reaches{" "}
-  {(BENCHMARK.reclaim.recoveryRate * 100).toFixed(2)}%
-</strong>
-<p>
-  The corrected system recovered{" "}
-  {`₹${(BENCHMARK.reclaim.recoveredPaise / 100).toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    },
-  )}`}{" "}
-  with {BENCHMARK.reclaim.attempts} charge attempts.
-</p>
-              </div>
-            </div>
-
-            <div className="incident-row success-row">
-              <span>
-                05
-              </span>
-
-              <div className="incident-time">
-                03:40
-              </div>
-
-              <div>
-                <strong>
-                  Adversarial safety proof passes
-                </strong>
-
-                <p>
-                  Taxonomy, AI boundary,
-                  gateway isolation, timeout,
-                  attempt-ceiling, risk and
-                  mandate tests all pass.
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* ENGINEERING LOG */}
+<section className="incident-section">
+  <div className="section-inner">
+    <div className="section-intro">
+      <div>
+        <div className="eyebrow">
+          ENGINEERING LOG
         </div>
-      </section>
+
+        <h2>
+          What broke at 2 AM.
+        </h2>
+      </div>
+
+      <div className="section-side-copy light">
+        The failure was measured, traced, fixed, and re-run.
+      </div>
+    </div>
+
+    <div className="incident-log">
+
+      <div className="incident-row failure">
+        <span>01</span>
+
+        <div className="incident-time">
+          TRACE
+        </div>
+
+        <div>
+          <strong>
+            Recovery console crashes on a valid response
+          </strong>
+
+          <p>
+            The recovery API returned a wrapped result, while the UI
+            expected the decision payload at the top level.
+          </p>
+        </div>
+      </div>
+
+      <div className="incident-row">
+        <span>02</span>
+
+        <div className="incident-time">
+          PROOF
+        </div>
+
+        <div>
+          <strong>
+            Proof script was reading the old response shape
+          </strong>
+
+          <p>
+            The production recovery path was correct, but the verification
+            script was still parsing the previous API contract.
+          </p>
+        </div>
+      </div>
+
+      <div className="incident-row">
+        <span>03</span>
+
+        <div className="incident-time">
+          SAFETY
+        </div>
+
+        <div>
+          <strong>
+            AI provenance and execution boundaries tightened
+          </strong>
+
+          <p>
+            AI recommendations were reduced to policy-approved candidates,
+            while guardrails retained authority over execution, retries,
+            risk, disputes and mandate ceilings.
+          </p>
+        </div>
+      </div>
+
+      <div className="incident-row success-row">
+        <span>04</span>
+
+        <div className="incident-time">
+          PASS
+        </div>
+
+        <div>
+          <strong>
+            Deterministic recovery proof passes
+          </strong>
+
+          <p>
+            100 payments, 177 decisions and 92 attempts produced a
+            reproducible proof run with ₹37,985.50 recovered and zero
+            AI fallbacks.
+          </p>
+        </div>
+      </div>
+
+      <div className="incident-row success-row">
+        <span>05</span>
+
+        <div className="incident-time">
+          LIVE
+        </div>
+
+        <div>
+          <strong>
+            Real Razorpay recovery path works
+          </strong>
+
+          <p>
+            A real Test Mode failed payment was evaluated through RECLAIM,
+            passed deterministic guardrails, generated a Razorpay recovery
+            link and recorded the execution trail in the audit ledger.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
       <section
         className="section proof-section"
